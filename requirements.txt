@@ -1,4 +1,5 @@
 datasets
 transformers
 accelerate
-
+openai
+torch
