@@ -13,7 +13,7 @@ import torch
 
 from utils import *
 
-if __name__ == "__main__":
+def main():
     # get args from terminal
     args = parse_input_args()
     print("*************************************************")
@@ -22,17 +22,24 @@ if __name__ == "__main__":
 
     # figure out what device we're running on
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    print(f"Running on: {device}\n")
+    print(f"Local model running on: {device}\n")
 
-    # load dataset
+    # note that it's unused if using api
+    model_type = MODELS[args.model]["type"]
+    if model_type == "api":
+        print(f"Model '{args.model}' only supports API inference. Local instance unused.")
+
+    # load dataset (note this data is already shuffled, so grabbing the first n later is okay)
     print("Loading data...\n")
-    train, test = safe_load_data(args)
+    data = safe_load_data(args)
     print("Data loaded.\n")
 
-    print(f"{train=}\n")
-    print(f"{test=}\n")
+    decoder = Decoder(args, data)
 
-    decoder = Decoder(args)
+    # run experiments
+    decoder.run_experiment()
 
-    print(f"Response from {args.model}:\n{decoder.generate_answer(args.prompt)}")
 
+
+if __name__ == "__main__":
+    main()
