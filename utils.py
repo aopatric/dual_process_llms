@@ -10,11 +10,13 @@ import argparse
 import os
 import openai
 import re
+import torch
 
 from datasets import load_dataset
-from transformers import AutoTokenizer, AutoModelForCausalLM
-from accelerate import Accelerator
+from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
 from tqdm import tqdm
+from torch.amp import autocast
+from time import sleep
 
 from prompting_examples import create_prefix    
 
@@ -22,6 +24,9 @@ from prompting_examples import create_prefix
 Constants
 
 """
+
+# make sure this is set
+HF_TOKEN = os.getenv("HF_TOKEN")
 
 DATASETS = {
     "gsm8k" : {
@@ -32,26 +37,20 @@ DATASETS = {
         "answer_field": "answer"
     },
     "mathqa": {
-        "answer_trigger": "#### ",
+        "answer_trigger": "",
         "path": "math_qa",
         "branch": "main",
         "question_field": "Problem",
         "answer_field": "Rationale"
     },
     "math": {
-        "answer_trigger": r"\boxed",  # Verify this trigger
+        "answer_trigger": "oxed",  # Verify this trigger
         "path": "competition_math",
         "branch": "main", 
         "question_field": "problem",
         "answer_field": "solution"
     }
 }
-
-SUPPORTED_MODELS = [
-    "gpt3",
-    "davinci",
-    "gpt4"
-]
 
 MODELS = {
     "gpt3": {
@@ -69,16 +68,42 @@ MODELS = {
         "name": "gpt-4",
         "api_type": "chat"
     },
+    # disabled b/c the endpoint is different
     "o1mini": {
         "type": "api",
         "name": "o1-mini-2024-09-12",
-        "api_type": "chat-o1" # these models have different endpoint behavior, not supported yet
+        "api_type": "chat-o1"
+    },
+    "tinyllama": {
+        "type": "local",
+        "name": "TinyLlama/TinyLlama-1.1B-Chat-v1.0",
+        "tokenizer": "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
+    },
+    # mistral is broken atm, not sure what's wrong, the config file does not get recognized
+    "mistral7b": {
+        "type": "local",
+        "name": "mistralai/Mistral-7B-v0.1",
+        "tokenizer": "mistralai/Mistral-7B-v0.1"
+    },
+    "falcon7b": {
+        "type": "local",
+        "name": "tiiuae/falcon-7b",
+        "tokenizer": "tiiuae/falcon-7b"
+    },
+    # says we can't connect to huggingface? but other models work
+    "llama2_7b": {
+        "type": "local",
+        "name": "meta-llama/Llama-2-7b-chat-hf",
+        "tokenizer": "meta-llama/Llama-2-7b-chat-hf"
     }
 }
 
+# exclude broken models from support
+DISABLED_MODELS = {"o1mini", "mistral7b", "llama2_7b"}
+SUPPORTED_MODELS = [key for key in MODELS.keys() if key not in DISABLED_MODELS]
+
 
 PROMPTING_METHODS = [
-    "default",
     "zero-shot-cot"
 ]
 
@@ -94,7 +119,6 @@ def parse_input_args():
     # adding arguments
     parser.add_argument("--dataset", type=str, default="gsm8k", choices=DATASETS.keys())
     parser.add_argument("--model", type=str, default="gpt3", choices=SUPPORTED_MODELS)
-    parser.add_argument("--prompt", type=str, default="The color of the sky is ")
     parser.add_argument("--prompting_method", type=str, default="zero-shot-cot", choices=PROMPTING_METHODS)
     parser.add_argument("--num_samples", type=int, default=10)
     parser.add_argument("--seed", type=int, default=42)
@@ -129,17 +153,36 @@ class Decoder:
 
         # make sure we have a key if we want to use an api model
         if self.model_info["type"] == "api":
+            print("Connecting to OpenAI API...\n")
             assert os.getenv("OPENAI_API_KEY") is not None, "API key required for API model !"
 
             self.client = openai.OpenAI()
 
         # otherwise, set up the local model that will be ran instead
-        else:
-            tokenizer = AutoTokenizer.from_pretrained(self.model_info["name"])
-            model = AutoModelForCausalLM.from_pretrained(self.model_info["name"])
-            accelerator = Accelerator()
+        elif self.model_info["type"] == "local":
+            self.device = "cuda" if torch.cuda.is_available() else "cpu"
 
-            self.model, self.tokenizer = accelerator.prepare(model, tokenizer)
+            print(f"Setting up local instance of {self.model_info["name"]} on {self.device}...\n")
+
+            # quantizing models to 4 bits to support larger model inference
+            config = BitsAndBytesConfig(
+                load_in_4bit=True,
+                bnb_4bit_compute_dtype=torch.float16
+            )
+
+            self.tokenizer = AutoTokenizer.from_pretrained(
+                self.model_info["tokenizer"],
+                token=HF_TOKEN
+            )
+            self.model = AutoModelForCausalLM.from_pretrained(
+                self.model_info["name"],
+                device_map="auto",
+                quantization_config=config,
+                trust_remote_code=True,
+                token=HF_TOKEN
+            )
+
+            print(f"Model '{self.model_info["name"]}' successfully loaded.\n")
     
     def transform_prompt(self, base_prompt: str) -> str:
         # grab the method we passed into args
@@ -156,8 +199,6 @@ class Decoder:
             return "other method detected!"
 
     def generate_answer(self, prompt: str):
-        model = self.args.model
-
         # if using api, run the inference and store the raw result
         if self.model_info["type"] == "api":
             # check if we have a completion or a chat model
@@ -177,44 +218,33 @@ class Decoder:
                     stop=["Q:", "\n\n"]
                 ).choices[0].text
         else:
-            # TODO: add support for the local inference version
-            raise NotImplementedError
-
-        # if using local model, run the inference locally and store the result
-
-        # borrow code from zero shot cot to cleanse the answers and return cleaned answer
+            tokens = self.tokenizer(prompt, return_tensors="pt").to(self.device)
+            with autocast("cuda"):
+                outputs = self.model.generate(
+                    **tokens,
+                    max_new_tokens=256,
+                )
+            answer = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
+        
         return answer
     
     def get_final_ans(self, raw_ans):
         trigger = self.dset_info["answer_trigger"]
 
-        if trigger in raw_ans:
-            answer = raw_ans.split(trigger)[-1].strip()
+        if trigger:
+            if trigger in raw_ans:
+                answer = raw_ans.split(trigger)[-1].strip()
 
-            try:
-                return float(answer)
-            except ValueError:
-                print(f"couldn't get value from answer '{raw_ans}'")
-                return None 
+                try:
+                    return float(answer)
+                except ValueError:
+                    # TODO: fix this so that it doesn't die when you try to use the MATH dataset
+                    print(f"couldn't get value from answer '{answer}'")
+            else:
+                print(f"Trigger not found in answer '{raw_ans}' from dataset '{self.dset_info["path"]}'")
 
-        # Fallback to the last number
-        print(f"Trigger not found in answer '{raw_ans}' from dataset '{self.dset_info["path"]}'")
+        # Fallback to the last number if no trigger or not found in the answer
         numbers = re.findall(r'-?\d*\.?\d+', raw_ans)
-        return float(numbers[-1]) if numbers else None
-
-    def extract_answer(self, text: str) -> float:
-        """Extract final numerical answer using dataset-specific trigger."""
-        trigger = self.dset_info["answer_trigger"]
-        
-        if trigger in text:
-            after_trigger = text.split(trigger)[-1].strip()
-            try:
-                return float(after_trigger)
-            except ValueError:
-                pass
-            
-        # Fallback to last number
-        numbers = re.findall(r'-?\d*\.?\d+', text)
         return float(numbers[-1]) if numbers else None
 
     def run_experiment(self):
@@ -237,7 +267,7 @@ class Decoder:
             prompt = self.transform_prompt(q)
 
             response = self.generate_answer(prompt)
-            raw_ans = self.extract_answer(response)
+            raw_ans = self.get_final_ans(response)
             
             print(f"True answer: {a}, Model answer: {raw_ans}")
 

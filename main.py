@@ -8,9 +8,6 @@ MIT
 2024
 """
 
-# imports
-import torch
-
 from utils import *
 
 def main():
@@ -20,14 +17,6 @@ def main():
     print(args)
     print("*************************************************\n")
 
-    # figure out what device we're running on
-    device = "cuda" if torch.cuda.is_available() else "cpu"
-    print(f"Local model running on: {device}\n")
-
-    # note that it's unused if using api
-    model_type = MODELS[args.model]["type"]
-    if model_type == "api":
-        print(f"Model '{args.model}' only supports API inference. Local instance unused.")
 
     # load dataset (note this data is already shuffled, so grabbing the first n later is okay)
     print("Loading data...\n")

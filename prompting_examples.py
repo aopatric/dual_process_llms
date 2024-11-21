@@ -10,7 +10,8 @@ import random
 ZERO_SHOT_COT = [
     "Let's solve this step by step:",
     "Let's approach this systematically:",
-    "Let's break this down step by step:"
+    "Let's break this down step by step:",
+    "Let's put our thinking caps on:",
 ]
 
 FEW_SHOT_COT = [

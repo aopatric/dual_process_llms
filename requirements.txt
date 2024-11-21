@@ -1,6 +1,9 @@
+huggingface_hub
 datasets
-transformers
-accelerate
+transformers>=4.36.0
+accelerate>=0.20.3
 openai
+bitsandbytes
 torch
 tqdm
+optimum
