@@ -16,6 +16,8 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 from accelerate import Accelerator
 from tqdm import tqdm
 
+from prompting_examples import create_prefix    
+
 """
 Constants
 
@@ -26,7 +28,22 @@ DATASETS = {
         "answer_trigger": "#### ", # gsm8k final answers preceded by this prefix
         "path": "gsm8k",
         "branch": "main",
+        "question_field": "question",
         "answer_field": "answer"
+    },
+    "mathqa": {
+        "answer_trigger": "#### ",
+        "path": "math_qa",
+        "branch": "main",
+        "question_field": "Problem",
+        "answer_field": "Rationale"
+    },
+    "math": {
+        "answer_trigger": r"\boxed",  # Verify this trigger
+        "path": "competition_math",
+        "branch": "main", 
+        "question_field": "problem",
+        "answer_field": "solution"
     }
 }
 
@@ -55,7 +72,7 @@ MODELS = {
     "o1mini": {
         "type": "api",
         "name": "o1-mini-2024-09-12",
-        "api_type": "chat"
+        "api_type": "chat-o1" # these models have different endpoint behavior, not supported yet
     }
 }
 
@@ -88,15 +105,16 @@ def parse_input_args():
 
 # safely load data by the arguments
 def safe_load_data(args):
-    config = DATASETS[args.dataset]
+    dset_info = DATASETS[args.dataset]
     n_samples = args.num_samples
     seed = args.seed
 
     # get a random subset of length n_samples from the requested dataset
     data = load_dataset(
-                        args.dataset,
-                        config["branch"],
-                        split="test"
+                        dset_info["path"],
+                        dset_info["branch"],
+                        split="test",
+                        trust_remote_code=True
                     ).shuffle(seed=seed)[:n_samples]
     return data
 
@@ -107,6 +125,7 @@ class Decoder:
         self.args = args
         self.data = data
         self.model_info = MODELS[self.args.model]
+        self.dset_info = DATASETS[self.args.dataset]
 
         # make sure we have a key if we want to use an api model
         if self.model_info["type"] == "api":
@@ -125,12 +144,14 @@ class Decoder:
     def transform_prompt(self, base_prompt: str) -> str:
         # grab the method we passed into args
         method = self.args.prompting_method
+        prefix = create_prefix(method, samples=5)
+        print(prefix)
 
         # process the prompt based on the method
         if method == "default":
             return base_prompt
         elif method == "zero-shot-cot":
-            return "Q: " + base_prompt + "\nA: Let's think step by step: "
+            return "Q: " + base_prompt + "\nA: " + prefix
         else:
             return "other method detected!"
 
@@ -165,7 +186,7 @@ class Decoder:
         return answer
     
     def get_final_ans(self, raw_ans):
-        trigger = DATASETS[self.args.dataset]["answer_trigger"]
+        trigger = self.dset_info["answer_trigger"]
 
         if trigger in raw_ans:
             answer = raw_ans.split(trigger)[-1].strip()
@@ -175,12 +196,15 @@ class Decoder:
             except ValueError:
                 print(f"couldn't get value from answer '{raw_ans}'")
                 return None 
-        print(f"Trigger not found in answer '{raw_ans}' from dataset '{self.args.datset}'")
-        return None
+
+        # Fallback to the last number
+        print(f"Trigger not found in answer '{raw_ans}' from dataset '{self.dset_info["path"]}'")
+        numbers = re.findall(r'-?\d*\.?\d+', raw_ans)
+        return float(numbers[-1]) if numbers else None
 
     def extract_answer(self, text: str) -> float:
         """Extract final numerical answer using dataset-specific trigger."""
-        trigger = DATASETS[self.args.dataset]["answer_trigger"]
+        trigger = self.dset_info["answer_trigger"]
         
         if trigger in text:
             after_trigger = text.split(trigger)[-1].strip()
@@ -194,11 +218,14 @@ class Decoder:
         return float(numbers[-1]) if numbers else None
 
     def run_experiment(self):
-        print(f"Running experiment with {self.args.num_samples} samples on dataset '{self.args.dataset}'...")
+        print(f"Running experiment with {self.args.num_samples} samples on dataset '{self.dset_info["path"]}' using prompting method {self.args.prompting_method}...")
 
         # extract final answers from dataset
-        questions, answers = self.data["question"], self.data[DATASETS[self.args.dataset]["answer_field"]]
+        q_field, a_field = self.dset_info["question_field"], self.dset_info["answer_field"]
+        questions, answers = self.data[q_field], self.data[a_field]
         true_final_ans = [self.get_final_ans(answer) for answer in answers]
+
+        dropped = len([i for i in true_final_ans if i is None])
 
         correct = 0       
 
@@ -217,4 +244,4 @@ class Decoder:
             if a == raw_ans:
                 correct += 1
         
-        print(f"\nFinal accuracy: Model {self.args.model} with prompting method {self.args.prompting_method} had an accuracy of {correct / self.args.num_samples} on {self.args.num_samples} from '{self.args.dataset}'")
+        print(f"\nFinal accuracy: Model {self.args.model} with prompting method {self.args.prompting_method} had an accuracy of {correct / (self.args.num_samples - dropped)} on {self.args.num_samples} ({dropped} dropped) from '{self.dset_info["path"]}'")
