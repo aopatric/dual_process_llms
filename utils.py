@@ -44,59 +44,9 @@ DATASETS = {
     }
 }
 
-MODELS = {
-    "gpt3": {
-        "type": "api",
-        "name": "babbage-002",
-        "api_type": "completion"
-    },
-    "davinci": {
-        "type": "api",
-        "name": "davinci-002",
-        "api_type": "completion"
-    },
-    "gpt4": {
-        "type": "api",
-        "name": "gpt-4",
-        "api_type": "chat"
-    },
-    # disabled b/c the endpoint is different
-    "o1mini": {
-        "type": "api",
-        "name": "o1-mini-2024-09-12",
-        "api_type": "chat-o1"
-    },
-    "tinyllama": {
-        "type": "local",
-        "name": "TinyLlama/TinyLlama-1.1B-Chat-v1.0",
-        "tokenizer": "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
-    },
-    # mistral is broken atm, not sure what's wrong, the config file does not get recognized
-    "mistral7b": {
-        "type": "local",
-        "name": "mistralai/Mistral-7B-v0.1",
-        "tokenizer": "mistralai/Mistral-7B-v0.1"
-    },
-    "falcon7b": {
-        "type": "local",
-        "name": "tiiuae/falcon-7b",
-        "tokenizer": "tiiuae/falcon-7b"
-    },
-    # says we can't connect to huggingface? but other models work
-    "llama2_7b": {
-        "type": "local",
-        "name": "meta-llama/Llama-2-7b-chat-hf",
-        "tokenizer": "meta-llama/Llama-2-7b-chat-hf"
-    }
-}
-
-# exclude broken models from support
-DISABLED_MODELS = {"o1mini", "mistral7b", "llama2_7b"}
-SUPPORTED_MODELS = [key for key in MODELS.keys() if key not in DISABLED_MODELS]
-
-
 PROMPTING_METHODS = [
-    "zero-shot-cot"
+    "zero-shot-cot",
+    "few-shot-cot"
 ]
 
 """
@@ -110,10 +60,10 @@ def parse_input_args():
 
     # adding arguments
     parser.add_argument("--dataset", type=str, default="gsm8k", choices=DATASETS.keys())
-    parser.add_argument("--model", type=str, default="gpt3", choices=SUPPORTED_MODELS)
     parser.add_argument("--prompting_method", type=str, default="zero-shot-cot", choices=PROMPTING_METHODS)
     parser.add_argument("--num_samples", type=int, default=10)
     parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--model", type=str, default="llama3.1:8b", choices=["llama3.1:70b", "llama3.1:8b"])
     parser.add_argument("--output_dir", type=str, default=None)
 
     args = parser.parse_args()
@@ -123,12 +73,19 @@ def parse_input_args():
 def parse_experiment_args():
     exp_parser = argparse.ArgumentParser(description="dual-process reasoning in LLMs -> running experiments")
     exp_parser.add_argument("--dataset", type=str, default="gsm8k", choices=DATASETS.keys())
-    exp_parser.add_argument("--model", type=str, default="gpt3", choices=SUPPORTED_MODELS)
     exp_parser.add_argument("--prompting_methods", type=str, default="zero-shot-cot", choices=PROMPTING_METHODS, nargs="+")
+    exp_parser.add_argument("--model", type=str, default="llama3.1:8b", choices=["llama3.1:70b", "llama3.1:8b"])
     exp_parser.add_argument("--num_samples", type=int, default=10)
     exp_parser.add_argument("--seed", type=int, default=42)
 
     args = exp_parser.parse_args()
+    return args
+
+# helper for parsing input arguments for generating plots
+def parse_plot_args():
+    plot_parser = argparse.ArgumentParser(description="dual-process reasoning in LLMs -> generating plots")
+    plot_parser.add_argument("--exp_dir", type=str, default=None)
+    args = plot_parser.parse_args()
     return args
 
 # safely load data by the arguments

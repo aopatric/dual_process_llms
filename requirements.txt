@@ -7,3 +7,6 @@ bitsandbytes
 torch
 tqdm
 optimum
+matplotlib
+numpy
+ollama # for llama3.1 8B

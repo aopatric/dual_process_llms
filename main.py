@@ -38,7 +38,7 @@ def main():
         os.makedirs(args.output_dir, exist_ok=True)
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
-        filename = os.path.join(args.output_dir, f"expresults_{args.model}_{args.dataset}_{args.prompting_method}_{timestamp}.json")
+        filename = os.path.join(args.output_dir, f"expresults_{args.dataset}_{args.prompting_method}_{timestamp}.json")
         with open(filename, "w") as f:
             json.dump(asdict(result), f, indent=2)
 

@@ -18,23 +18,30 @@ Args:
 from utils import *
 
 import subprocess
+import uuid
 
-def run_experiment(dataset, model, prompting_method, num_samples, seed, output_dir=None):
+def run_experiment(dataset, prompting_method, num_samples, seed, output_dir='/default/', model="llama3.1:7b"):
     """
     This function essentially calls main.py with the given arguments for
     each prompting method and processes the results
     """
-    cmd = f"python main.py --dataset {dataset} --model {model} --prompting_method {prompting_method} --num_samples {num_samples} --seed {seed}"
-    if output_dir:
-        cmd += f" --output_dir {output_dir}"
-    subprocess.run(cmd, shell=True, capture_output=True, text=True)
+    cmd = f"python main.py --dataset {dataset} --prompting_method {prompting_method} --num_samples {num_samples} --seed {seed} --output_dir {output_dir} --model {model}"
+    subprocess.run(cmd, shell=True)
 
 def main():
     args = parse_experiment_args()
+    output_dir = os.path.join("experiments", str(uuid.uuid4()))
 
     for prompting_method in args.prompting_methods:
-        print(f"Running experiments for {prompting_method}...")
-        run_experiment(args.dataset, args.model, prompting_method, args.num_samples, args.seed)
+        print(f"Running experiment for {prompting_method} on dataset {args.dataset} and model {args.model}...")
+        run_experiment(args.dataset, prompting_method, args.num_samples, args.seed, output_dir, args.model)
+    
+    print("All experiments complete.")
+
+    print("Generating plots...")
+    cmd = f"python generate_plots.py --exp_dir {output_dir}"
+    subprocess.run(cmd, shell=True)
+    print("Plots generated.")
 
 if __name__ == "__main__":
     main()
