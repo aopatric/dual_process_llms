@@ -21,14 +21,14 @@ class Decoder:
     def transform_prompt(self, base_prompt: str) -> str:
         # grab the method we passed into args
         method = self.args.prompting_method
-        prefix = create_prefix(method, samples=5)
+        prefix = create_prefix(method)
 
         # process the prompt based on the method
         if method == "default":
             return base_prompt
-        elif method == "zero-shot-cot":
+        elif method == 'zero-shot-cot':
             return "Q: " + base_prompt + "\nA: " + prefix
-        elif method == "few-shot-cot":
+        elif method in ["few-shot-cot", "dual-process", "dual-process-w-err"]:
             return prefix + "\n\nQ: " + base_prompt + "\nA: "
         else:
             return "other method detected!"

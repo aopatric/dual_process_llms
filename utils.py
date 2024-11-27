@@ -46,7 +46,9 @@ DATASETS = {
 
 PROMPTING_METHODS = [
     "zero-shot-cot",
-    "few-shot-cot"
+    "few-shot-cot",
+    "dual-process",
+    "dual-process-w-err"
 ]
 
 """
