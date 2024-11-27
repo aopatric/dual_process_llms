@@ -17,6 +17,9 @@ python main.py <--kwargs>
 ## Args:
 note: everything in caps can be accessed via utils.py
 
+eventually, the goal is for you to run run_experiments.py and pass in the args you want to do multiple experiments at once,
+but for now just run main.py with the args you want.
+
 --dataset (str="gsm8k") : dataset name. one of DATASETS
 
 --model (str="gpt3") : model to use automatically set up for using the OpenAI API. one of MODELS
@@ -26,3 +29,5 @@ note: everything in caps can be accessed via utils.py
 --num_samples (int=10) : number of samples to take from the given dataset (automatically shuffled)
 
 --seed (int=42) : random seed for reproducibility
+
+--output_dir (str=None) : directory to save the results to, if None, results are not saved

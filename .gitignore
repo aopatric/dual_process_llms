@@ -1,4 +1,6 @@
 # https://github.com/github/gitignore/blob/main/Python.gitignore
+/.vscode/
+/temp/
 
 
 # Byte-compiled / optimized / DLL files
