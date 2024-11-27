@@ -109,10 +109,90 @@ DUAL_PROCESS_COT = [
     
     "Q: A bag contains 3 red balls and 2 blue balls. What is the probability of drawing a red ball?\nSystem 1: There are more red balls than blue balls.\nSystem 2: Calculate the probability: Number of red balls / Total number of balls = 3/5.\nTherefore: The probability of drawing a red ball is 3/5.\nThe answer is 0.6.",
     
-    "Q: John buys 3 books for $12 each and 2 notebooks for $5 each. How much money does he spend in total?\nSystem 1: John is spending a fair amount of money.\nSystem 2: Calculate the total cost: Cost of books = 3 × $12 = $36. Cost of notebooks = 2 × $5 = $10. Total cost = $36 + $10 = $46.\nTherefore: John spends $46 in total.\nThe answer is 46."
+    "Q: John buys 3 books for $12 each and 2 notebooks for $5 each. How much money does he spend in total?\nSystem 1: John is spending a fair amount of money.\nSystem 2: Calculate the total cost: Cost of books = 3 × $12 = $36. Cost of notebooks = 2 × $5 = $10. Total cost = $36 + $10 = $46.\nTherefore: John spends $46 in total.\nThe answer is 46.",
+    
+    "Q: A store has a 30% off sale. If a shirt originally costs $40, how much will it cost after the discount?\nSystem 1: The discount is significant, reducing the price considerably.\nSystem 2: Calculate the final price: 30% off means paying 70% of the original price. Final price = $40 × 0.7 = $28.\nTherefore: The shirt will cost $28 after the discount.\nThe answer is 28.",
+    
+    "Q: If it takes 8 hours to paint 3 rooms, how many hours will it take to paint 7 rooms at the same rate?\nSystem 1: Painting more rooms will take significantly more time.\nSystem 2: Calculate the time per room: 8 hours ÷ 3 rooms = 2.67 hours per room. Time for 7 rooms = 2.67 × 7 = 18.67 hours.\nTherefore: It will take 18.67 hours to paint 7 rooms.\nThe answer is 18.67.",
+    
+    "Q: A car uses 6 gallons of gas to drive 180 miles. How many miles per gallon does the car get?\nSystem 1: The car seems to be quite efficient.\nSystem 2: Calculate miles per gallon: Total distance ÷ Total gas = 180 miles ÷ 6 gallons = 30 miles per gallon.\nTherefore: The car gets 30 miles per gallon.\nThe answer is 30.",
+    
+    "Q: If 4 pencils cost $6, how much would 10 pencils cost?\nSystem 1: More pencils will cost proportionally more.\nSystem 2: Calculate the cost per pencil: $6 ÷ 4 = $1.50 per pencil. Cost for 10 pencils = $1.50 × 10 = $15.\nTherefore: 10 pencils would cost $15.\nThe answer is 15.",
+    
+    "Q: A recipe calls for 2.5 cups of flour to make 20 cookies. How many cups of flour are needed to make 50 cookies?\nSystem 1: More cookies require more flour.\nSystem 2: Calculate cups per cookie: 2.5 cups ÷ 20 cookies = 0.125 cups per cookie. Cups for 50 cookies = 0.125 × 50 = 6.25 cups.\nTherefore: 6.25 cups of flour are needed.\nThe answer is 6.25."
 ]
 
 DUAL_PROCESS_W_ERR_COT = [
+    """Q: If you have 5 boxes with 6 chocolates in each box, how many chocolates do you have total?
+System 1: This feels like it should be around 30 chocolates.
+System 2: Let's calculate: 5 boxes × 6 chocolates = 30 chocolates.
+System 1 and System 2 agree on this calculation.
+Therefore: There are 30 chocolates in total.
+The answer is 30.""",
+
+    """Q: What is 25% of 200?
+System 1: A quarter of 200 should be 50.
+System 2: Let's calculate: 200 × 0.25 = 50.
+System 1 and System 2 agree perfectly here.
+Therefore: 25% of 200 is 50.
+The answer is 50.""",
+
+    """Q: If a square has sides of length 10 meters, what is its area?
+System 1: With sides of 10, the area should be 100 square meters.
+System 2: Let's calculate: Area = side × side = 10 × 10 = 100 square meters.
+System 1 and System 2 are in perfect agreement.
+Therefore: The square's area is 100 square meters.
+The answer is 100.""",
+
+    """Q: What is double 45?
+System 1: Doubling 45 should give us 90.
+System 2: Let's calculate: 45 × 2 = 90.
+System 1 and System 2 agree on this straightforward calculation.
+Therefore: Double 45 is 90.
+The answer is 90.""",
+
+    """Q: A rectangle has a length of 8 cm and a width of 3 cm. What is the perimeter?
+System 1: The perimeter should be the sum of all sides, which feels like 22 cm.
+System 2: Let's calculate: Perimeter = 2 × (Length + Width) = 2 × (8 + 3) = 22 cm.
+System 1 and System 2 agree on this calculation.
+Therefore: The perimeter is 22 cm.
+The answer is 22.""",
+
+    """Q: If a car travels at 60 miles per hour for 2 hours, how far does it travel?
+System 1: It should travel about 120 miles.
+System 2: Let's calculate: Distance = Speed × Time = 60 miles/hour × 2 hours = 120 miles.
+System 1 and System 2 agree on this calculation.
+Therefore: The car travels 120 miles.
+The answer is 120.""",
+
+    """Q: What is the sum of 15 and 25?
+System 1: Adding 15 and 25 should give us 40.
+System 2: Let's calculate: 15 + 25 = 40.
+System 1 and System 2 agree on this calculation.
+Therefore: The sum is 40.
+The answer is 40.""",
+
+    """Q: If a triangle has sides of 3 cm, 4 cm, and 5 cm, what is its perimeter?
+System 1: The perimeter should be the sum of all sides, which feels like 12 cm.
+System 2: Let's calculate: Perimeter = 3 + 4 + 5 = 12 cm.
+System 1 and System 2 agree on this calculation.
+Therefore: The perimeter is 12 cm.
+The answer is 12.""",
+
+    """Q: What is 10% of 150?
+System 1: 10% of 150 should be 15.
+System 2: Let's calculate: 150 × 0.10 = 15.
+System 1 and System 2 agree on this calculation.
+Therefore: 10% of 150 is 15.
+The answer is 15.""",
+
+    """Q: If you have 3 dozen eggs, how many eggs do you have?
+System 1: 3 dozen should be 36 eggs.
+System 2: Let's calculate: 3 × 12 = 36.
+System 1 and System 2 agree on this calculation.
+Therefore: You have 36 eggs.
+The answer is 36.""",
+
     """Q: A store offers a 20% discount on a $80 jacket. What is the final price?
 System 1: The price should be a bit more than half of $80.
 System 2: Let me calculate: 20% of $80 is $80 × 0.2 = $16, so the final price is $16.
