@@ -6,7 +6,7 @@ import ollama
 
 from tqdm import tqdm
 
-from utils import *
+from utils import DATASETS, ExperimentResult, PROMPTING_METHODS
 from prompting_examples import create_prefix
 
 class Decoder:
@@ -21,14 +21,10 @@ class Decoder:
     def transform_prompt(self, base_prompt: str) -> str:
         # grab the method we passed into args
         method = self.args.prompting_method
-        prefix = create_prefix(method)
+        prefix = create_prefix(method, samples=self.args.n_shots)
 
         # process the prompt based on the method
-        if method == "default":
-            return base_prompt
-        elif method == 'zero-shot-cot':
-            return "Q: " + base_prompt + "\nA: " + prefix
-        elif method in ["few-shot-cot", "dual-process", "dual-process-w-err"]:
+        if method in PROMPTING_METHODS:
             return prefix + "\n\nQ: " + base_prompt + "\nA: "
         else:
             return "other method detected!"
@@ -54,32 +50,13 @@ class Decoder:
                     # TODO: fix this so that it doesn't die when you try to use the MATH dataset
                     print(f"couldn't get value from answer '{answer}'\n")
             else:
-                print(f"Trigger not found in example...\n")
+                print("Trigger not found in example...\n")
 
         # Fallback to the last number if no trigger or not found in the answer
         numbers = re.findall(r'-?\d*\.?\d+', raw_ans)
         return float(numbers[-1]) if numbers else None
-    
-    # def get_perplexity(self, prompt: str, answer: str):
-    #     if self.model_info["type"] == "api": # api models don't let us directly calculate perplexity
-    #         raise ValueError("Perplexity not supported for API models")
-        
-    #     else:
-    #         full_seq = prompt + " " + answer
-    #         inputs = self.tokenizer(full_seq, return_tensors="pt").to(self.device)
-
-    #         with torch.no_grad():
-    #             outputs = self.model(**inputs)
-    #             log_probs = outputs.logits
-
-    #         # perplexity is the exponential of negative average log likelihood
-    #         return torch.exp(-log_probs.mean()).item()
-            
-
-
+   
     def run_experiment(self):
-        print(f"Running experiment with {self.args.num_samples} samples on dataset '{self.dset_info["path"]}' using prompting method {self.args.prompting_method}...")
-
         # extract final answers from dataset
         q_field, a_field = self.dset_info["question_field"], self.dset_info["answer_field"]
         questions, answers = self.data[q_field], self.data[a_field]
@@ -88,8 +65,6 @@ class Decoder:
         dropped = len([i for i in true_final_ans if i is None])
 
         correct = 0       
-
-        # ppl_total = 0 if self.model_info["type"] == "local" else None
 
         # iterate over samples and test
         for i in tqdm(range(len(questions))):
@@ -100,11 +75,6 @@ class Decoder:
 
             response = self.generate_answer(prompt)
             raw_ans = self.get_final_ans(response)
-
-            # commented out because it's not supported for local models yet
-            # if self.model_info["type"] == "local":
-                # ppl_total += self.get_perplexity(prompt, response)
-
             print(f"True answer: {a}, Model answer: {raw_ans}")
 
             if a == raw_ans:
@@ -118,10 +88,10 @@ class Decoder:
         return ExperimentResult(
             prompting_method=self.args.prompting_method,
             accuracy=final_acc,
-            perplexity=None,
             total_samples=self.args.num_samples,
             dropped_samples=dropped,
             model_name=self.model,
             dataset_name=self.dset_info["path"],
-            seed=self.args.seed
+            seed=self.args.seed,
+            n_shots=self.args.n_shots
         )

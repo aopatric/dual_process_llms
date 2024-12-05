@@ -1,12 +1,5 @@
-"""
-    Useful functions that make life easier for the rest of the code.
-"""
-
-"""
-Imports
-
-"""
 import argparse
+import numpy as np
 import os
 
 from datasets import load_dataset
@@ -17,7 +10,6 @@ Constants
 
 """
 
-# make sure this is set
 HF_TOKEN = os.getenv("HF_TOKEN")
 
 DATASETS = {
@@ -45,10 +37,8 @@ DATASETS = {
 }
 
 PROMPTING_METHODS = [
-    "zero-shot-cot",
-    "few-shot-cot",
-    "dual-process",
-    "dual-process-w-err"
+    "chain-of-thought",
+    "dual-prompting",
 ]
 
 """
@@ -60,13 +50,16 @@ Useful functions
 def parse_input_args():
     parser = argparse.ArgumentParser(description="dual-process reasoning in LLMs")
 
-    # adding arguments
+    # set a random seed here in case we only run from the main script
+    seed = np.random.randint(1, 9999)
+
     parser.add_argument("--dataset", type=str, default="gsm8k", choices=DATASETS.keys())
-    parser.add_argument("--prompting_method", type=str, default="zero-shot-cot", choices=PROMPTING_METHODS)
-    parser.add_argument("--num_samples", type=int, default=10)
-    parser.add_argument("--seed", type=int, default=42)
-    parser.add_argument("--model", type=str, default="llama3.1:8b", choices=["llama3.1:70b", "llama3.1:8b"])
-    parser.add_argument("--output_dir", type=str, default=None)
+    parser.add_argument("--prompting_method", type=str, default="dual-prompting", choices=PROMPTING_METHODS)
+    parser.add_argument("--num_samples", type=int, default=200)
+    parser.add_argument("--seed", type=int, default=seed)
+    parser.add_argument("--model", type=str, default="llama3.1", choices=["llama3.1:70b", "llama3.1", "gpt4-o"])
+    parser.add_argument("--output_dir", type=str, default="./output/")
+    parser.add_argument("--n_shots", type=int, default=8)
 
     args = parser.parse_args()
     return args
@@ -75,10 +68,15 @@ def parse_input_args():
 def parse_experiment_args():
     exp_parser = argparse.ArgumentParser(description="dual-process reasoning in LLMs -> running experiments")
     exp_parser.add_argument("--dataset", type=str, default="gsm8k", choices=DATASETS.keys())
-    exp_parser.add_argument("--prompting_methods", type=str, default="zero-shot-cot", choices=PROMPTING_METHODS, nargs="+")
-    exp_parser.add_argument("--model", type=str, default="llama3.1:8b", choices=["llama3.1:70b", "llama3.1:8b"])
-    exp_parser.add_argument("--num_samples", type=int, default=10)
-    exp_parser.add_argument("--seed", type=int, default=42)
+    exp_parser.add_argument("--prompting_methods", type=str, default=['chain-of-thought', 'dual-prompting'], choices=PROMPTING_METHODS, nargs="+")
+    exp_parser.add_argument("--model", type=str, default="llama3.1", choices=["llama3.1:70b", "llama3.1", "gpt4-o"])
+    exp_parser.add_argument("--num_samples", type=int, default=200)
+    exp_parser.add_argument("--n_shots", type=int, default=8)
+    exp_parser.add_argument("--num_trials", type=int, default=10)
+
+    # set a random seed here in case we run from the experiments script
+    seed = np.random.randint(1, 9999)
+    exp_parser.add_argument("--seed", type=int, default=seed)
 
     args = exp_parser.parse_args()
     return args
@@ -109,9 +107,9 @@ def safe_load_data(args):
 class ExperimentResult:
     prompting_method: str
     accuracy: float
-    perplexity: float
     total_samples: int
     dropped_samples: int
     model_name: str
     dataset_name: str
     seed: int
+    n_shots: int

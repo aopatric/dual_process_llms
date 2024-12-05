@@ -6,73 +6,7 @@ Compilation of all of the prompting examples that we need for generating few-sho
 
 import random
 
-
-# thanks claude :)
-ZERO_SHOT_COT = [
-    # Original prompts
-    "Let's solve this step by step:",
-    "Let's approach this systematically:",
-    "Let's break this down step by step:",
-    "Let's put our thinking caps on:",
-    
-    # Additional analytical prompts
-    "Let's solve this methodically:",
-    "Let's analyze this problem step by step:",
-    "Let's work through this systematically:",
-    "Let's break this problem into smaller parts:",
-    "Let's solve this logically, one step at a time:",
-    
-    # Encouraging careful thinking
-    "Let's think about this carefully:",
-    "Let's reason through this step by step:",
-    "Let's tackle this problem methodically:",
-    "Let's work this out systematically:",
-    "Let's solve this by breaking it down:",
-    
-    # Problem-solving focused
-    "Let's develop a solution step by step:",
-    "Let's find the solution systematically:",
-    "Let's solve this problem piece by piece:",
-    "Let's work towards the solution step by step:",
-    "Let's figure this out systematically:",
-    
-    # Mathematical approach
-    "Let's calculate this step by step:",
-    "Let's solve this equation systematically:",
-    "Let's work through this problem step by step:",
-    "Let's break down this calculation:",
-    "Let's solve this mathematically, step by step:",
-    
-    # Analytical variations
-    "Let's analyze this situation step by step:",
-    "Let's examine this problem systematically:",
-    "Let's investigate this methodically:",
-    "Let's evaluate this step by step:",
-    "Let's assess this situation systematically:",
-    
-    # Process-oriented
-    "Let's follow a step-by-step process:",
-    "Let's use a systematic approach:",
-    "Let's proceed step by step:",
-    "Let's take this one step at a time:",
-    "Let's go through this systematically:",
-    
-    # Reasoning focused
-    "Let's reason about this step by step:",
-    "Let's think through this systematically:",
-    "Let's use logical steps to solve this:",
-    "Let's apply step-by-step reasoning:",
-    "Let's use systematic thinking:",
-    
-    # Problem decomposition
-    "Let's break this question down step by step:",
-    "Let's divide this problem into steps:",
-    "Let's solve this by breaking it into parts:",
-    "Let's approach this part by part:",
-    "Let's decompose this problem systematically:"
-]
-
-FEW_SHOT_COT = [
+CHAIN_OF_THOUGHT = [
    "Q: If a train travels 60 miles per hour for 3 hours, how far does it travel?\nA: Let's solve this step by step:\n1. The train travels at 60 miles per hour\n2. It travels for 3 hours\n3. Distance = Speed × Time = 60 miles/hour × 3 hours = 180 miles\nTherefore, the train travels 180 miles.\n\nThe answer is 180.",
    
    "Q: Sarah has 3 times as many apples as Tom. Tom has 4 apples. How many apples do they have together?\nA: Let's solve this step by step:\n1. Tom has 4 apples\n2. Sarah has 3 times as many apples as Tom: 3 × 4 = 12 apples\n3. Total apples = Sarah's apples + Tom's apples = 12 + 4 = 16 apples\nTherefore, they have 16 apples together.\n\nThe answer is 16.",
@@ -236,24 +170,14 @@ Therefore: The final price is 75% of the original.
 The answer is 75."""
 ]
 
-METHODS_TO_PROMPTS = {
-    "zero-shot-cot": ZERO_SHOT_COT,
-    "few-shot-cot": FEW_SHOT_COT,
-    "dual-process": DUAL_PROCESS_COT,
-    "dual-process-w-err": DUAL_PROCESS_W_ERR_COT
-}
+DUAL_PROMPTING = DUAL_PROCESS_COT + DUAL_PROCESS_W_ERR_COT
 
-def create_prefix(prompting_method, samples=3):
-    if prompting_method == "zero-shot-cot":
-        return random.choice(ZERO_SHOT_COT)
-    elif prompting_method == "few-shot-cot":
-        selected = random.sample(FEW_SHOT_COT, min(samples, len(FEW_SHOT_COT)))
+def create_prefix(prompting_method, samples=8):
+    if prompting_method == "chain-of-thought":
+        selected = random.sample(CHAIN_OF_THOUGHT, min(samples, len(CHAIN_OF_THOUGHT)))
         return "\n\n".join(selected)
-    elif prompting_method == "dual-process":
-        selected = random.sample(DUAL_PROCESS_COT, min(samples, len(DUAL_PROCESS_COT)))
-        return "\n\n".join(selected)
-    elif prompting_method == "dual-process-w-err":
-        selected = random.sample(DUAL_PROCESS_W_ERR_COT, min(samples, len(DUAL_PROCESS_W_ERR_COT)))
+    elif prompting_method == "dual-prompting":
+        selected = random.sample(DUAL_PROMPTING, min(samples, len(DUAL_PROMPTING)))
         return "\n\n".join(selected)
     else:
         return "Method not recognized!"
