@@ -34,143 +34,152 @@ CHAIN_OF_THOUGHT = [
    "Q: If you have $100 and spend 15% on food and 25% on rent, how much money do you have left?\nA: Let's solve this step by step:\n1. Total money = $100\n2. Spent on food = $100 × 0.15 = $15\n3. Spent on rent = $100 × 0.25 = $25\n4. Total spent = $15 + $25 = $40\n5. Money left = $100 - $40 = $60\nTherefore, you have $60 left.\n\nThe answer is 60."
 ]
 
-DUAL_PROCESS_COT = [
-    "Q: If a train travels 60 miles per hour for 3 hours, how far does it travel?\nSystem 1: The train is moving fast, covering a lot of ground quickly.\nSystem 2: Calculate the distance using the formula Distance = Speed × Time. Distance = 60 miles/hour × 3 hours = 180 miles.\nTherefore: The train travels 180 miles.\nThe answer is 180.",
-    
-    "Q: Sarah has 3 times as many apples as Tom. Tom has 4 apples. How many apples do they have together?\nSystem 1: Sarah has a lot more apples than Tom.\nSystem 2: Calculate Sarah's apples: 3 × 4 = 12. Total apples = Sarah's apples + Tom's apples = 12 + 4 = 16.\nTherefore: Together, they have 16 apples.\nThe answer is 16.",
-    
-    "Q: A rectangle has a length of 10 cm and a width of 5 cm. What is the area of the rectangle?\nSystem 1: The rectangle is not very large.\nSystem 2: Calculate the area using the formula Area = Length × Width. Area = 10 cm × 5 cm = 50 cm².\nTherefore: The area of the rectangle is 50 square centimeters.\nThe answer is 50.",
-    
-    "Q: A bag contains 3 red balls and 2 blue balls. What is the probability of drawing a red ball?\nSystem 1: There are more red balls than blue balls.\nSystem 2: Calculate the probability: Number of red balls / Total number of balls = 3/5.\nTherefore: The probability of drawing a red ball is 3/5.\nThe answer is 0.6.",
-    
-    "Q: John buys 3 books for $12 each and 2 notebooks for $5 each. How much money does he spend in total?\nSystem 1: John is spending a fair amount of money.\nSystem 2: Calculate the total cost: Cost of books = 3 × $12 = $36. Cost of notebooks = 2 × $5 = $10. Total cost = $36 + $10 = $46.\nTherefore: John spends $46 in total.\nThe answer is 46.",
-    
-    "Q: A store has a 30% off sale. If a shirt originally costs $40, how much will it cost after the discount?\nSystem 1: The discount is significant, reducing the price considerably.\nSystem 2: Calculate the final price: 30% off means paying 70% of the original price. Final price = $40 × 0.7 = $28.\nTherefore: The shirt will cost $28 after the discount.\nThe answer is 28.",
-    
-    "Q: If it takes 8 hours to paint 3 rooms, how many hours will it take to paint 7 rooms at the same rate?\nSystem 1: Painting more rooms will take significantly more time.\nSystem 2: Calculate the time per room: 8 hours ÷ 3 rooms = 2.67 hours per room. Time for 7 rooms = 2.67 × 7 = 18.67 hours.\nTherefore: It will take 18.67 hours to paint 7 rooms.\nThe answer is 18.67.",
-    
-    "Q: A car uses 6 gallons of gas to drive 180 miles. How many miles per gallon does the car get?\nSystem 1: The car seems to be quite efficient.\nSystem 2: Calculate miles per gallon: Total distance ÷ Total gas = 180 miles ÷ 6 gallons = 30 miles per gallon.\nTherefore: The car gets 30 miles per gallon.\nThe answer is 30.",
-    
-    "Q: If 4 pencils cost $6, how much would 10 pencils cost?\nSystem 1: More pencils will cost proportionally more.\nSystem 2: Calculate the cost per pencil: $6 ÷ 4 = $1.50 per pencil. Cost for 10 pencils = $1.50 × 10 = $15.\nTherefore: 10 pencils would cost $15.\nThe answer is 15.",
-    
-    "Q: A recipe calls for 2.5 cups of flour to make 20 cookies. How many cups of flour are needed to make 50 cookies?\nSystem 1: More cookies require more flour.\nSystem 2: Calculate cups per cookie: 2.5 cups ÷ 20 cookies = 0.125 cups per cookie. Cups for 50 cookies = 0.125 × 50 = 6.25 cups.\nTherefore: 6.25 cups of flour are needed.\nThe answer is 6.25."
+
+DUAL_PROMPTING = [
+    """Q: Suppose there are 6 identical chairs, and each chair has 4 legs. How many chair legs are there in total?
+
+System 1: Intuitively, 6 chairs times 4 legs per chair should give me 24 legs. That seems straightforward.
+
+System 2: Let's be exact: 6 chairs * 4 legs/chair = 24 legs total. There's no trick here, just multiplication.
+
+System 1: My initial guess matches the careful calculation perfectly.
+
+System 2: Great, no contradictions. The final answer is 24.
+
+Final Answer: 24""",
+
+    """Q: You have 10 notebooks, and each notebook contains 50 pages. After tearing out 8 pages from one notebook, how many pages remain in total?
+
+System 1: Let’s think it through: Initially, 10 notebooks * 50 pages each = 500 pages total. If I remove 8 pages from one notebook, I lose those 8 pages from the total. So 500 - 8 = 492 pages remain. That feels right.
+
+System 2: Carefully checking: 10 * 50 = 500 pages initially. Removing 8 pages from the total leaves 500 - 8 = 492 pages. Straightforward arithmetic, no complexity missed.
+
+System 1: My gut calculation and the careful method match up perfectly.
+
+System 2: Exactly. There's no ambiguity. The total remaining is 492.
+
+Final Answer: 492""",
+
+    """Q: You have 3 baskets of eggs. Each basket contains 12 eggs. You want to give 5 eggs away. How many eggs remain?
+
+System 1: Total eggs: 3 baskets * 12 eggs = 36 eggs. If I give away 5, then 36 - 5 = 31 eggs remain. That seems correct.
+
+System 2: Double-check: Total: 36 eggs. Remove 5: 36 - 5 = 31 eggs. Straight math, no hidden catch.
+
+System 1: My initial intuition and the calculated result align perfectly.
+
+System 2: Perfect. The final answer is 31.
+
+Final Answer: 31""",
+
+    """Q: You plan a hike of 15 miles. If you walk at a steady pace of 3 miles per hour, how many hours will it take to complete the hike?
+
+System 1: Rough intuition: 15 miles divided by 3 mph = 5 hours. That seems right.
+
+System 2: Precise calculation: 15 miles ÷ 3 mph = 5 hours. Exactly as the intuition stated.
+
+System 1: Matches perfectly, no second thoughts.
+
+System 2: Straightforward. The answer is 5 hours.
+
+Final Answer: 5""",
+
+    """Q: You have a room with 4 walls, and each wall requires 2 cans of paint. If you paint all 4 walls, how many cans of paint do you need in total?
+
+System 1: Quickly, 4 walls * 2 cans each = 8 cans total. Feels right.
+
+System 2: Check carefully: 4 walls × 2 cans/wall = 8 cans total. No trick, just multiplication.
+
+System 1: Perfect agreement.
+
+System 2: The answer is definitively 8.
+
+Final Answer: 8""",
+
+    """Q: You have 100 items to pack, and each box can hold 8 items. How many boxes do you need if you want no items left unpacked?
+
+System 1: Let’s estimate: 100 ÷ 8 = 12.5, so I’d need 13 boxes because you can't have half a box. I’m guessing 13 boxes total.
+
+System 2: Exact division: 100 ÷ 8 = 12 remainder 4. Since there's a remainder, I need one more box. That’s 12 full boxes plus 1 extra = 13 boxes total.
+
+System 1: Matches the careful reasoning perfectly.
+
+System 2: Correct. The final answer is 13 boxes.
+
+Final Answer: 13""",
+
+    """Q: You drive 150 miles in 3 hours. What is your average speed in miles per hour?
+
+System 1: Intuition: 150 miles / 3 hours = 50 mph average. Straightforward.
+
+System 2: Step-by-step: Average speed = Total distance ÷ Total time = 150 ÷ 3 = 50 mph. No complexity.
+
+System 1: Perfect match again.
+
+System 2: Final answer is 50 mph.
+
+Final Answer: 50""",
+
+    """Q: You need to cover a floor that measures 10 feet by 12 feet with square tiles that are 1 foot by 1 foot. How many tiles do you need in total?
+
+System 1: The floor area is 10 * 12 = 120 square feet. Each tile covers 1 square foot. So I need 120 tiles total. Seems right.
+
+System 2: Careful reasoning: The floor area = 10 ft * 12 ft = 120 sq ft. Each 1x1 tile covers 1 sq ft. Thus, total tiles needed = 120.
+
+System 1: Matches perfectly.
+
+System 2: Exactly. The final answer is 120.
+
+Final Answer: 120""",
+
+    """Q: You have 2 pizzas, and each pizza is cut into 8 slices. If you have 5 friends and want to give each friend 3 slices, will you have enough slices?
+
+System 1: Total slices: 2 pizzas * 8 slices each = 16 slices. You need 5 friends * 3 slices/friend = 15 slices. 16 slices available vs. 15 needed. Yes, I have enough slices, and even 1 slice leftover.
+
+System 2: Double-check: 2*8 = 16 slices total. 5*3 = 15 slices required. 16 ≥ 15, so yes, there's enough.
+
+System 1: Perfect match. I have one slice more than needed.
+
+System 2: Answer: Yes, I have enough, with 1 slice extra.
+
+Final Answer: Yes, enough slices (1 slice remaining).""",
+
+    """Q: An orchard has 10 apple trees, and each tree grows 25 apples. If you pick 50 apples to give away, how many apples are left on the trees?
+
+System 1: Total apples: 10 trees * 25 apples/tree = 250 apples. After giving away 50, 250 - 50 = 200 apples remain. Seems correct.
+
+System 2: Careful check: 10 * 25 = 250. Remove 50: 250 - 50 = 200. Straight arithmetic.
+
+System 1: Matches exactly.
+
+System 2: The final answer is 200 apples.
+
+Final Answer: 200""",
+
+    """Q: You are putting up a fence along a straight line. For every 10 feet of fence, you place 1 post. If the fence line is 100 feet long, how many posts do you need in total?
+
+System 1: Intuitively, if it's every 10 feet, 100 feet would have 100/10 = 10 posts. But wait, fences often require one extra post at the end. Let’s think carefully: If you place a post at 0 ft, then at 10 ft, 20 ft, ... up to 100 ft, that's actually 11 posts (one at the start, one at every increment of 10, and one at the end).
+
+System 2: Let's reason systematically. If you have a line of length L, and posts every X feet, you count the endpoints. For a 100-ft line at intervals of 10 ft, the posts are at: 0,10,20,30,40,50,60,70,80,90,100. That's indeed 11 posts total.
+
+System 1: Good thing I double-checked. It's 11, not 10.
+
+System 2: Perfect reasoning. The final answer is 11 posts.
+
+Final Answer: 11""",
+
+    """Q: You have a fundraiser where you must give each of 20 participants 3 chocolate bars. Chocolate bars are sold in boxes of 5 bars. How many boxes must you buy to have enough for everyone?
+
+System 1: Total needed: 20 participants * 3 bars each = 60 bars. Each box has 5 bars, so 60 ÷ 5 = 12 boxes. That's a clean division, no remainder.
+
+System 2: Carefully verify: Need 60 bars total. Each box has 5 bars. 60 ÷ 5 = 12 exactly, so 12 boxes total.
+
+System 1: Perfect. No discrepancy.
+
+System 2: The final answer is 12 boxes.
+
+Final Answer: 12"""
 ]
-
-DUAL_PROCESS_W_ERR_COT = [
-    """Q: If you have 5 boxes with 6 chocolates in each box, how many chocolates do you have total?
-System 1: This feels like it should be around 30 chocolates.
-System 2: Let's calculate: 5 boxes × 6 chocolates = 30 chocolates.
-System 1 and System 2 agree on this calculation.
-Therefore: There are 30 chocolates in total.
-The answer is 30.""",
-
-    """Q: What is 25% of 200?
-System 1: A quarter of 200 should be 50.
-System 2: Let's calculate: 200 × 0.25 = 50.
-System 1 and System 2 agree perfectly here.
-Therefore: 25% of 200 is 50.
-The answer is 50.""",
-
-    """Q: If a square has sides of length 10 meters, what is its area?
-System 1: With sides of 10, the area should be 100 square meters.
-System 2: Let's calculate: Area = side × side = 10 × 10 = 100 square meters.
-System 1 and System 2 are in perfect agreement.
-Therefore: The square's area is 100 square meters.
-The answer is 100.""",
-
-    """Q: What is double 45?
-System 1: Doubling 45 should give us 90.
-System 2: Let's calculate: 45 × 2 = 90.
-System 1 and System 2 agree on this straightforward calculation.
-Therefore: Double 45 is 90.
-The answer is 90.""",
-
-    """Q: A rectangle has a length of 8 cm and a width of 3 cm. What is the perimeter?
-System 1: The perimeter should be the sum of all sides, which feels like 22 cm.
-System 2: Let's calculate: Perimeter = 2 × (Length + Width) = 2 × (8 + 3) = 22 cm.
-System 1 and System 2 agree on this calculation.
-Therefore: The perimeter is 22 cm.
-The answer is 22.""",
-
-    """Q: If a car travels at 60 miles per hour for 2 hours, how far does it travel?
-System 1: It should travel about 120 miles.
-System 2: Let's calculate: Distance = Speed × Time = 60 miles/hour × 2 hours = 120 miles.
-System 1 and System 2 agree on this calculation.
-Therefore: The car travels 120 miles.
-The answer is 120.""",
-
-    """Q: What is the sum of 15 and 25?
-System 1: Adding 15 and 25 should give us 40.
-System 2: Let's calculate: 15 + 25 = 40.
-System 1 and System 2 agree on this calculation.
-Therefore: The sum is 40.
-The answer is 40.""",
-
-    """Q: If a triangle has sides of 3 cm, 4 cm, and 5 cm, what is its perimeter?
-System 1: The perimeter should be the sum of all sides, which feels like 12 cm.
-System 2: Let's calculate: Perimeter = 3 + 4 + 5 = 12 cm.
-System 1 and System 2 agree on this calculation.
-Therefore: The perimeter is 12 cm.
-The answer is 12.""",
-
-    """Q: What is 10% of 150?
-System 1: 10% of 150 should be 15.
-System 2: Let's calculate: 150 × 0.10 = 15.
-System 1 and System 2 agree on this calculation.
-Therefore: 10% of 150 is 15.
-The answer is 15.""",
-
-    """Q: If you have 3 dozen eggs, how many eggs do you have?
-System 1: 3 dozen should be 36 eggs.
-System 2: Let's calculate: 3 × 12 = 36.
-System 1 and System 2 agree on this calculation.
-Therefore: You have 36 eggs.
-The answer is 36.""",
-
-    """Q: A store offers a 20% discount on a $80 jacket. What is the final price?
-System 1: The price should be a bit more than half of $80.
-System 2: Let me calculate: 20% of $80 is $80 × 0.2 = $16, so the final price is $16.
-Wait - System 1 notices this seems too low. Let's check System 2's work:
-The 20% ($16) is the discount amount, so we need to subtract it from the original price:
-$80 - $16 = $64
-Therefore: The jacket costs $64 after discount.
-The answer is 64.""",
-
-    """Q: If it takes 5 workers 6 hours to build a wall, how long would it take 15 workers?
-System 1: With triple the workers, it should take about a third of the time.
-System 2: Let's calculate: 15 workers is 3 times more workers, so it will take 6 × 3 = 18 hours.
-Wait - System 1 notices this is wrong. More workers should make it faster, not slower. Let's correct System 2:
-If 5 workers take 6 hours, then 15 workers (3 times more) will take 6 ÷ 3 = 2 hours.
-Therefore: It will take 2 hours with 15 workers.
-The answer is 2.""",
-
-    """Q: A car travels 240 miles using 8 gallons of gas. What is its fuel efficiency in miles per gallon?
-System 1: The efficiency should be pretty good, probably around 30 mpg.
-System 2: Let's calculate: 8 gallons ÷ 240 miles = 0.033 gallons per mile.
-Wait - System 1 notices this seems very low. System 2 divided the wrong way:
-Correct calculation: 240 miles ÷ 8 gallons = 30 miles per gallon.
-Therefore: The car's fuel efficiency is 30 miles per gallon.
-The answer is 30.""",
-
-    """Q: If 4 pizzas feed 12 people, how many pizzas are needed for 20 people?
-System 1: It should be a bit more than 6 pizzas.
-System 2: Let's set up a proportion: 4/12 = x/20, so x = (4 × 20) ÷ 12 = 6.67
-Wait - System 1 confirms this matches our intuition of "a bit more than 6."
-Therefore: We need 6.67 pizzas, which means ordering 7 pizzas to have enough.
-The answer is 7.""",
-
-    """Q: A shirt's price is increased by 50% and then decreased by 50%. What is the final price compared to the original?
-System 1: It feels like it should return to the original price, but something seems off.
-System 2: Let's say it starts at $100. After 50% increase: $100 + $50 = $150.
-After 50% decrease: $150 - $50 = $100.
-Wait - System 1 is right that something's wrong. System 2 made a mistake:
-The second 50% should be calculated from $150, not $100:
-50% of $150 = $75, so $150 - $75 = $75
-Therefore: The final price is 75% of the original.
-The answer is 75."""
-]
-
-DUAL_PROMPTING = DUAL_PROCESS_COT + DUAL_PROCESS_W_ERR_COT
 
 def create_prefix(prompting_method, samples=8):
     if prompting_method == "chain-of-thought":

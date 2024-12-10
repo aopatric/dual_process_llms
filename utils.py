@@ -28,7 +28,7 @@ DATASETS = {
         "answer_field": "Rationale"
     },
     "math": {
-        "answer_trigger": "oxed",  # Verify this trigger
+        "answer_trigger": "",  # Verify this trigger
         "path": "competition_math",
         "branch": "main", 
         "question_field": "problem",
