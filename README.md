@@ -2,6 +2,8 @@
 
 ## Usage
 
+Ensure you have Ollama installed and serving using `ollama serve`.
+
 Starting from the root directory:
 
 ```
